@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/aradhyamishra/Documents/trimly-full/src/app/\\\\\\(customer\\\\\\)/)",
+      "Bash(find /Users/aradhyamishra/Documents/trimly-full/src/app/\\\\\\(customer\\\\\\)/{salons -type f)",
+      "Bash(find /Users/aradhyamishra/Documents/trimly-full/{src -type f)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d)"
+    ]
+  }
+}
