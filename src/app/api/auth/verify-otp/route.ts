@@ -27,7 +27,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ user: data.user, session: data.session })
+    // Check if this is a new user (no full_name set yet)
+    const userId = data.user?.id
+    let isNew = false
+    if (userId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', userId)
+        .single()
+      isNew = !profile?.full_name
+    }
+
+    return NextResponse.json({ user: data.user, session: data.session, isNew })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

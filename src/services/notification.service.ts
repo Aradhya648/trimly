@@ -2,15 +2,20 @@ import { Resend } from 'resend'
 import type { BookingWithDetails } from '@/types'
 import { formatDate, formatTime } from '@/lib/utils'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM_EMAIL = 'Trimly <bookings@trimly.in>'
+
+function getResend(): Resend {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY is not set')
+  return new Resend(key)
+}
 
 export async function sendBookingConfirmation(
   booking: BookingWithDetails,
   customerEmail: string,
   customerName: string
 ): Promise<void> {
+  const resend = getResend()
   await resend.emails.send({
     from: FROM_EMAIL,
     to: customerEmail,
@@ -40,6 +45,7 @@ export async function sendBookingCancellation(
   customerEmail: string,
   customerName: string
 ): Promise<void> {
+  const resend = getResend()
   await resend.emails.send({
     from: FROM_EMAIL,
     to: customerEmail,
