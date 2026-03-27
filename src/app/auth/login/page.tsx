@@ -65,7 +65,8 @@ export default function LoginPage() {
                   🇮🇳 +91
                 </div>
                 <Input
-                  type="tel"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="98765 43210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}

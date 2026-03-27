@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Phone } from 'lucide-react'
+import { MapPin, Phone, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Salon } from '@/types'
@@ -36,17 +36,28 @@ export default function SalonCard({ salon }: Props) {
             <p className="text-slate-400 text-sm mt-1 line-clamp-2">{salon.description}</p>
           )}
         </div>
-        <div className="flex flex-col gap-1 text-slate-500 text-sm">
-          <span className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-            {salon.area}, {salon.city}
-          </span>
-          {salon.phone && (
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col gap-1 text-slate-500">
             <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              {salon.phone}
+              <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              {salon.area ? `${salon.area}, ` : ''}{salon.city}
             </span>
-          )}
+            {salon.phone && (
+              <span className="flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                {salon.phone}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="flex items-center gap-1 text-amber-400 font-medium">
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              4.8
+            </span>
+            {salon.min_price != null && (
+              <span className="text-slate-400">from ₹{salon.min_price}</span>
+            )}
+          </div>
         </div>
         <Link href={`/salons/${salon.id}`}>
           <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white">

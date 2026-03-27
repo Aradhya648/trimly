@@ -22,9 +22,16 @@ export async function getSalons(filters: SalonFilters = {}): Promise<Salon[]> {
     )
   }
 
-  const { data, error } = await query.order('created_at', { ascending: false })
+  const { data, error } = await query
+    .select('*, services(price)')
+    .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
-  return data || []
+  return (data || []).map((s: Salon & { services?: { price: number }[] }) => {
+    const prices = (s.services ?? []).map((sv) => sv.price)
+    const min_price = prices.length ? Math.min(...prices) : undefined
+    const { services: _services, ...rest } = s as typeof s & { services?: unknown }
+    return { ...rest, min_price } as Salon
+  })
 }
 
 export async function getSalonById(id: string): Promise<SalonWithDetails | null> {

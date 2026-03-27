@@ -20,6 +20,33 @@ function VerifyForm() {
   const [step, setStep] = useState<'otp' | 'profile'>('otp')
   const [loading, setLoading] = useState(false)
   const [isNew, setIsNew] = useState(false)
+  const [resendTimer, setResendTimer] = useState(30)
+  const [resending, setResending] = useState(false)
+
+  useEffect(() => {
+    if (resendTimer <= 0) return
+    const t = setTimeout(() => setResendTimer((n) => n - 1), 1000)
+    return () => clearTimeout(t)
+  }, [resendTimer])
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      toast.success('OTP resent!')
+      setResendTimer(30)
+      setOtp('')
+    } catch {
+      toast.error('Could not resend OTP')
+    } finally {
+      setResending(false)
+    }
+  }
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
@@ -108,14 +135,29 @@ function VerifyForm() {
                 >
                   {loading ? 'Verifying...' : 'Verify'}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push('/auth/login')}
-                  className="text-slate-500"
-                >
-                  ← Change number
-                </Button>
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push('/auth/login')}
+                    className="text-slate-500 px-0"
+                  >
+                    ← Change number
+                  </Button>
+                  {resendTimer > 0 ? (
+                    <span className="text-slate-500 text-xs">Resend in {resendTimer}s</span>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleResend}
+                      disabled={resending}
+                      className="text-emerald-400 hover:text-emerald-300 px-0 text-xs"
+                    >
+                      {resending ? 'Sending…' : 'Resend OTP'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           ) : (

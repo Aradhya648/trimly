@@ -41,7 +41,10 @@
       "WebFetch(domain:trimly-topaz.vercel.app)",
       "WebFetch(domain:trimly-om0i4xbmn-aradhya648s-projects.vercel.app)",
       "Bash(cat /Users/aradhyamishra/Documents/trimly-full/.next/static/css/*.css)",
-      "Bash(wc -c /Users/aradhyamishra/Documents/trimly-full/.next/static/css/*.css)"
+      "Bash(wc -c /Users/aradhyamishra/Documents/trimly-full/.next/static/css/*.css)",
+      "Bash(curl -s https://trimly-topaz.vercel.app/api/seed)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\" https://trimly-topaz.vercel.app/api/seed)"
     ]
   }
 }

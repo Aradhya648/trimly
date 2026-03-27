@@ -26,6 +26,7 @@ export interface Salon {
   cover_image_url: string
   is_active: boolean
   created_at: string
+  min_price?: number
 }
 
 export interface Staff {
