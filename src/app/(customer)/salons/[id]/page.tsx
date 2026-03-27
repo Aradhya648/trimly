@@ -7,23 +7,15 @@ import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
 import ServiceList from '@/components/salon/ServiceList'
 import StaffCard from '@/components/salon/StaffCard'
-import type { SalonWithDetails } from '@/types'
+import { getSalonById } from '@/services/salon.service'
 
 interface Props {
   params: Promise<{ id: string }>
 }
 
-async function getSalon(id: string): Promise<SalonWithDetails | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/salons/${id}`, { cache: 'no-store' })
-  if (!res.ok) return null
-  const json = await res.json()
-  return json.data ?? null
-}
-
 export default async function SalonDetailPage({ params }: Props) {
   const { id } = await params
-  const salon = await getSalon(id)
+  const salon = await getSalonById(id)
   if (!salon) notFound()
 
   return (

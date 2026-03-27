@@ -10,7 +10,7 @@ import Footer from '@/components/shared/Footer'
 import SalonGrid from '@/components/salon/SalonGrid'
 import type { Salon } from '@/types'
 
-const CITIES = ['Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata', 'Ahmedabad']
+const CITIES = ['Lucknow', 'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata', 'Ahmedabad']
 
 function SalonListing() {
   const searchParams = useSearchParams()
