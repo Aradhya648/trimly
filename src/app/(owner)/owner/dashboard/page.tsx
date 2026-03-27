@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Store, CalendarCheck, Clock, TrendingUp, ArrowRight } from 'lucide-react'
+import { Store, CalendarCheck, Clock, TrendingUp, ArrowRight, CheckCircle2, Circle, Plus } from 'lucide-react'
 import Navbar from '@/components/shared/Navbar'
 import StatCard from '@/components/owner/StatCard'
 import BookingsTable from '@/components/owner/BookingsTable'
+import { Button } from '@/components/ui/button'
 import type { Salon, BookingWithDetails } from '@/types'
 
 export default function OwnerDashboardPage() {
@@ -44,6 +45,7 @@ export default function OwnerDashboardPage() {
   const today = new Date().toISOString().split('T')[0]
   const todayBookings = bookings.filter((b) => b.slot?.date === today && b.status === 'confirmed')
   const upcomingBookings = bookings.filter((b) => b.slot?.date >= today && b.status === 'confirmed')
+  const isNewOwner = !loading && salons.length === 0
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -61,6 +63,34 @@ export default function OwnerDashboardPage() {
           </Link>
         </div>
 
+        {/* New owner setup checklist */}
+        {isNewOwner && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 mb-8">
+            <h2 className="text-lg font-semibold text-emerald-400 mb-1">👋 Welcome to Trimly!</h2>
+            <p className="text-slate-400 text-sm mb-5">Follow these steps to start accepting bookings:</p>
+            <div className="flex flex-col gap-3">
+              {[
+                { step: 1, label: 'Create your salon', done: false, href: '/owner/salons', cta: 'Add Salon' },
+                { step: 2, label: 'Add services (haircut, shave, etc.)', done: false, href: null, cta: null },
+                { step: 3, label: 'Add staff members', done: false, href: null, cta: null },
+                { step: 4, label: 'Set available time slots', done: false, href: null, cta: null },
+              ].map((item) => (
+                <div key={item.step} className="flex items-center gap-3">
+                  <Circle className="w-5 h-5 text-slate-600 shrink-0" />
+                  <span className="text-slate-400 text-sm flex-1">{item.label}</span>
+                  {item.href && (
+                    <Link href={item.href}>
+                      <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs h-7">
+                        <Plus className="w-3 h-3 mr-1" />{item.cta}
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[...Array(4)].map((_, i) => (
@@ -76,14 +106,16 @@ export default function OwnerDashboardPage() {
           </div>
         )}
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-          <h2 className="text-lg font-semibold mb-4">Recent Bookings</h2>
-          {loading ? (
-            <div className="h-32 animate-pulse bg-slate-800 rounded-xl" />
-          ) : (
-            <BookingsTable bookings={bookings.slice(0, 10)} />
-          )}
-        </div>
+        {!isNewOwner && (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h2 className="text-lg font-semibold mb-4">Recent Bookings</h2>
+            {loading ? (
+              <div className="h-32 animate-pulse bg-slate-800 rounded-xl" />
+            ) : (
+              <BookingsTable bookings={bookings.slice(0, 10)} />
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

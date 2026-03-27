@@ -63,7 +63,7 @@ export async function createSalon(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('salons')
-    .insert({ ...input, owner_id: ownerId })
+    .insert({ ...input, area: input.area ?? '', owner_id: ownerId })
     .select()
     .single()
 

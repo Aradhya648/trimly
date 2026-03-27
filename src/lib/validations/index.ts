@@ -25,13 +25,13 @@ export const createSalonSchema = z.object({
   name: z.string().min(2).max(100),
   description: z.string().max(500).optional(),
   city: z.string().min(2).max(100),
-  area: z.string().min(2).max(100),
+  area: z.string().max(100).optional(),
   address: z.string().min(5).max(300),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  phone: z.string().min(10).max(15),
-  email: z.string().email().optional(),
-  cover_image_url: z.string().url().optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
+  phone: z.string().optional(),
+  email: z.union([z.string().email(), z.literal('')]).optional().transform(v => v || undefined),
+  cover_image_url: z.union([z.string().url(), z.literal('')]).optional().transform(v => v || undefined),
 })
 
 export const createServiceSchema = z.object({
@@ -44,7 +44,7 @@ export const createServiceSchema = z.object({
 export const createStaffSchema = z.object({
   name: z.string().min(2).max(100),
   bio: z.string().max(300).optional(),
-  avatar_url: z.string().url().optional(),
+  avatar_url: z.union([z.string().url(), z.literal('')]).optional().transform(v => v || undefined),
   service_ids: z.array(z.string().uuid()).optional(),
 })
 

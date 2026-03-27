@@ -1,14 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, MapPin, Scissors } from 'lucide-react'
+import { Search, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Navbar from '@/components/shared/Navbar'
+import SalonGrid from '@/components/salon/SalonGrid'
+import type { Salon } from '@/types'
 
 export default function HomePage() {
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const [salons, setSalons] = useState<Salon[]>([])
+  const [salonsLoading, setSalonsLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/salons?limit=6')
+      .then((r) => r.json())
+      .then((j) => { setSalons(j.data ?? []); setSalonsLoading(false) })
+      .catch(() => setSalonsLoading(false))
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,24 +42,10 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <Scissors className="w-5 h-5 text-emerald-400" />
-          <span className="text-xl font-bold tracking-tight">Trimly</span>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="ghost" onClick={() => router.push('/auth/login')} className="text-slate-300">
-            Login
-          </Button>
-          <Button onClick={() => router.push('/auth/login')} className="bg-emerald-500 hover:bg-emerald-600 text-white">
-            Book Now
-          </Button>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center text-center px-6 py-24 gap-8">
+      <section className="flex flex-col items-center justify-center text-center px-6 py-20 gap-8">
         <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 text-emerald-400 text-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           Book before you leave home
@@ -87,6 +85,38 @@ export default function HomePage() {
           <MapPin className="w-4 h-4" />
           Use my location
         </Button>
+      </section>
+
+      {/* Salons section */}
+      <section className="max-w-7xl mx-auto px-6 pb-16">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">
+            {salons.length > 0 ? 'Salons near you' : 'Featured Salons'}
+          </h2>
+          {salons.length > 0 && (
+            <Button variant="ghost" onClick={() => router.push('/salons')} className="text-emerald-400 hover:text-emerald-300">
+              View all →
+            </Button>
+          )}
+        </div>
+
+        {salonsLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl h-72 animate-pulse" />
+            ))}
+          </div>
+        ) : salons.length === 0 ? (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+            <p className="text-slate-400 text-lg mb-2">No salons listed yet</p>
+            <p className="text-slate-500 text-sm">Be the first to list your salon on Trimly!</p>
+            <Button onClick={() => router.push('/auth/login')} className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white">
+              List your salon
+            </Button>
+          </div>
+        ) : (
+          <SalonGrid salons={salons} />
+        )}
       </section>
 
       {/* Features */}
