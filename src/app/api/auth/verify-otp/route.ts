@@ -14,13 +14,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { phone, token } = parsed.data
+    const { email, token } = parsed.data
     const supabase = await createClient()
 
     const { data, error } = await supabase.auth.verifyOtp({
-      phone,
+      email,
       token,
-      type: 'sms',
+      type: 'email',
     })
 
     if (error) {
