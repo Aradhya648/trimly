@@ -1,6 +1,6 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, type SupabaseClient } from '@supabase/ssr'
 
-export function createClient() {
+export function createClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) {
@@ -12,7 +12,21 @@ export function createClient() {
         signOut: async () => {},
       },
       from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }) }),
-    } as unknown as ReturnType<typeof createBrowserClient>
+    } as unknown as SupabaseClient
   }
-  return createBrowserClient(url, key)
+
+  // Safe localStorage access (avoid SSR crashes)
+  let storage: Storage | undefined = undefined
+  if (typeof window !== 'undefined') {
+    try {
+      storage = window.localStorage
+    } catch (e) {
+      storage = undefined
+    }
+  }
+
+  return createBrowserClient(url, key, {
+    global: { headers: {} },
+    auth: { storage },
+  })
 }
