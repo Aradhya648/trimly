@@ -11,25 +11,27 @@ import { toast } from 'sonner'
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSendOtp = async () => {
-    if (!email.trim() || !email.includes('@')) {
-      toast.error('Enter a valid email address')
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      toast.error('Enter both email and password')
       return
     }
-
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch('/api/auth/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Failed to send OTP')
-      toast.success('Check your email for the 6-digit code!')
-      router.push(`/auth/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`)
+      if (!res.ok) throw new Error(json.error || 'Authentication failed')
+      toast.success('Logged in!')
+      // Redirect based on role (if known)
+      const role = json.user?.user_metadata?.role
+      router.push(role === 'owner' ? '/owner/dashboard' : '/')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Something went wrong')
     } finally {
@@ -47,7 +49,7 @@ export default function LoginPage() {
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
           <h1 className="text-xl font-semibold text-white mb-1">Welcome to Trimly</h1>
-          <p className="text-slate-400 text-sm mb-6">Enter your email to get a sign-in code</p>
+          <p className="text-slate-400 text-sm mb-6">Sign in with your email and password</p>
 
           <div className="flex flex-col gap-4">
             <div className="grid gap-2">
@@ -57,18 +59,29 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                 className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
                 autoComplete="email"
               />
             </div>
-
+            <div className="grid gap-2">
+              <Label className="text-slate-300">Password</Label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                autoComplete="current-password"
+              />
+            </div>
             <Button
-              onClick={handleSendOtp}
+              onClick={handleLogin}
               disabled={loading}
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-11"
             >
-              {loading ? 'Sending code...' : 'Send Code'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </div>
 
