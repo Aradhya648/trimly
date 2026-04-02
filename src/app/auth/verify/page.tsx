@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 function VerifyForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const phone = searchParams.get('phone') ?? ''
+  const email = searchParams.get('email') ?? ''
   const redirectTo = searchParams.get('redirectTo') ?? '/'
 
   const [otp, setOtp] = useState('')
@@ -19,7 +19,6 @@ function VerifyForm() {
   const [role, setRole] = useState<'customer' | 'owner'>('customer')
   const [step, setStep] = useState<'otp' | 'profile'>('otp')
   const [loading, setLoading] = useState(false)
-  const [isNew, setIsNew] = useState(false)
   const [resendTimer, setResendTimer] = useState(30)
   const [resending, setResending] = useState(false)
 
@@ -35,14 +34,14 @@ function VerifyForm() {
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ email }),
       })
       if (!res.ok) throw new Error('Failed')
-      toast.success('OTP resent!')
+      toast.success('Code resent!')
       setResendTimer(30)
       setOtp('')
     } catch {
-      toast.error('Could not resend OTP')
+      toast.error('Could not resend code')
     } finally {
       setResending(false)
     }
@@ -50,7 +49,7 @@ function VerifyForm() {
 
   const handleVerify = async () => {
     if (otp.length !== 6) {
-      toast.error('Enter the 6-digit OTP')
+      toast.error('Enter the 6-digit code')
       return
     }
     setLoading(true)
@@ -58,13 +57,12 @@ function VerifyForm() {
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, token: otp }),
+        body: JSON.stringify({ email, token: otp }),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Invalid OTP')
+      if (!res.ok) throw new Error(json.error || 'Invalid code')
 
       if (json.isNew) {
-        setIsNew(true)
         setStep('profile')
       } else {
         toast.success('Welcome back!')
@@ -110,13 +108,14 @@ function VerifyForm() {
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
           {step === 'otp' ? (
             <>
-              <h1 className="text-xl font-semibold text-white mb-1">Verify your number</h1>
+              <h1 className="text-xl font-semibold text-white mb-1">Check your email</h1>
               <p className="text-slate-400 text-sm mb-6">
-                We sent a 6-digit code to <span className="text-white">{phone}</span>
+                We sent a 6-digit code to{' '}
+                <span className="text-white font-medium">{email}</span>
               </p>
               <div className="flex flex-col gap-4">
                 <div className="grid gap-2">
-                  <Label className="text-slate-300">OTP Code</Label>
+                  <Label className="text-slate-300">6-digit code</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -126,11 +125,12 @@ function VerifyForm() {
                     onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
                     className="bg-slate-800 border-slate-700 text-white tracking-widest text-center text-lg"
                     maxLength={6}
+                    autoFocus
                   />
                 </div>
                 <Button
                   onClick={handleVerify}
-                  disabled={loading}
+                  disabled={loading || otp.length !== 6}
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-11"
                 >
                   {loading ? 'Verifying...' : 'Verify'}
@@ -142,7 +142,7 @@ function VerifyForm() {
                     onClick={() => router.push('/auth/login')}
                     className="text-slate-500 px-0"
                   >
-                    ← Change number
+                    ← Change email
                   </Button>
                   {resendTimer > 0 ? (
                     <span className="text-slate-500 text-xs">Resend in {resendTimer}s</span>
@@ -154,7 +154,7 @@ function VerifyForm() {
                       disabled={resending}
                       className="text-emerald-400 hover:text-emerald-300 px-0 text-xs"
                     >
-                      {resending ? 'Sending…' : 'Resend OTP'}
+                      {resending ? 'Sending…' : 'Resend code'}
                     </Button>
                   )}
                 </div>
@@ -170,8 +170,10 @@ function VerifyForm() {
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleProfile()}
                     placeholder="John Doe"
                     className="bg-slate-800 border-slate-700 text-white"
+                    autoFocus
                   />
                 </div>
                 <div className="grid gap-2">

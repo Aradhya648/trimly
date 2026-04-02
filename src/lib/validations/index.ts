@@ -1,15 +1,11 @@
 import { z } from 'zod'
 
 export const sendOtpSchema = z.object({
-  phone: z
-    .string()
-    .min(10)
-    .max(15)
-    .regex(/^\+?[1-9]\d{9,14}$/, 'Invalid phone number'),
+  email: z.string().email('Invalid email address'),
 })
 
 export const verifyOtpSchema = z.object({
-  phone: z.string(),
+  email: z.string().email(),
   token: z.string().length(6).regex(/^\d+$/, 'OTP must be 6 digits'),
 })
 
