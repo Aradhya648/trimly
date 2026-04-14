@@ -2,16 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Scissors } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Scissors, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
@@ -29,7 +27,6 @@ export default function LoginPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Authentication failed')
       toast.success('Logged in!')
-      // Redirect based on role (if known)
       const role = json.user?.user_metadata?.role
       router.push(role === 'owner' ? '/owner/dashboard' : '/')
     } catch (e: unknown) {
@@ -40,53 +37,71 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
+        {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <Scissors className="w-6 h-6 text-emerald-400" />
-          <span className="text-2xl font-bold text-white">Trimly</span>
+          <div className="w-10 h-10 bg-amber-400 rounded-2xl flex items-center justify-center shadow-md">
+            <Scissors className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-2xl font-bold text-gray-900">Trimly</span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
-          <h1 className="text-xl font-semibold text-white mb-1">Welcome to Trimly</h1>
-          <p className="text-slate-400 text-sm mb-6">Sign in with your email and password</p>
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <h1 className="text-xl font-bold text-gray-900 mb-1">Welcome back</h1>
+          <p className="text-gray-400 text-sm mb-6">Sign in to book your appointments</p>
 
           <div className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label className="text-slate-300">Email Address</Label>
-              <Input
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-700">Email Address</label>
+              <input
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 text-sm outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
                 autoComplete="email"
               />
             </div>
-            <div className="grid gap-2">
-              <Label className="text-slate-300">Password</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                autoComplete="current-password"
-              />
+
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 text-sm outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-            <Button
+
+            {/* Submit */}
+            <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-11"
+              className="w-full bg-amber-400 hover:bg-amber-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors shadow-sm mt-1"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </Button>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
           </div>
 
-          <p className="text-slate-500 text-xs text-center mt-6">
-            By continuing, you agree to our Terms of Service.
+          <p className="text-gray-400 text-xs text-center mt-5 leading-relaxed">
+            New here? Your account will be created automatically.
           </p>
         </div>
       </div>

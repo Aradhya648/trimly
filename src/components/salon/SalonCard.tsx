@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Phone, Star } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { MapPin, Star, Clock } from 'lucide-react'
 import type { Salon } from '@/types'
 
 interface Props {
@@ -11,59 +9,75 @@ interface Props {
 
 export default function SalonCard({ salon }: Props) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-all group">
-      <div className="relative h-44 bg-slate-800">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+      {/* Cover Image */}
+      <div className="relative h-40 bg-gray-100">
         {salon.cover_image_url ? (
           <Image
             src={salon.cover_image_url}
             alt={salon.name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-slate-600 text-5xl">✂️</div>
+          <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-5xl">
+            ✂️
+          </div>
         )}
         {!salon.is_active && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <Badge variant="secondary">Inactive</Badge>
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-white text-gray-700 text-xs font-semibold px-3 py-1 rounded-full">
+              Closed
+            </span>
+          </div>
+        )}
+        {salon.min_price != null && (
+          <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+            from ₹{salon.min_price}
           </div>
         )}
       </div>
-      <div className="p-4 flex flex-col gap-3">
-        <div>
-          <h3 className="font-semibold text-white text-lg leading-tight">{salon.name}</h3>
-          {salon.description && (
-            <p className="text-slate-400 text-sm mt-1 line-clamp-2">{salon.description}</p>
-          )}
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex flex-col gap-1 text-slate-500">
-            <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              {salon.area ? `${salon.area}, ` : ''}{salon.city}
-            </span>
-            {salon.phone && (
-              <span className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                {salon.phone}
+
+      {/* Info */}
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 text-base leading-tight truncate">
+              {salon.name}
+            </h3>
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-400">
+              <MapPin className="w-3 h-3 shrink-0" />
+              <span className="truncate">
+                {[salon.area, salon.city].filter(Boolean).join(', ')}
               </span>
-            )}
+              {salon.lat && salon.lng && (
+                <>
+                  <span className="text-gray-200">•</span>
+                  <span className="text-gray-400">~2 km</span>
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <span className="flex items-center gap-1 text-amber-400 font-medium">
-              <Star className="w-3.5 h-3.5 fill-amber-400" />
-              4.8
-            </span>
-            {salon.min_price != null && (
-              <span className="text-slate-400">from ₹{salon.min_price}</span>
-            )}
+          {/* Rating */}
+          <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg shrink-0">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-bold text-amber-600">4.8</span>
           </div>
         </div>
-        <Link href={`/salons/${salon.id}`}>
-          <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white">
-            View & Book
-          </Button>
-        </Link>
+
+        {/* Next slot + Book Now */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span className="text-emerald-600 font-medium">Next available</span>
+          </div>
+          <Link href={`/salons/${salon.id}`}>
+            <button className="bg-amber-400 hover:bg-amber-500 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm">
+              Book Now
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   )

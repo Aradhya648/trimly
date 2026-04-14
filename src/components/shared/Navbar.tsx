@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { Scissors, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { createClient } from '@/lib/supabase/client'
+import { Scissors, Menu, X, LogOut, LayoutDashboard } from 'lucide-react'
 import type { Profile } from '@/types'
 
 export default function Navbar() {
@@ -13,25 +11,23 @@ export default function Navbar() {
   const pathname = usePathname()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      setProfile(data)
-    }
-    fetchUser()
+    // Dynamic import keeps Supabase out of the SSR bundle
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      const supabase = createClient()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        setProfile(data)
+      }
       fetchUser()
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(() => fetchUser())
+      return () => subscription.unsubscribe()
     })
-    return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
@@ -45,19 +41,90 @@ export default function Navbar() {
     profile?.role === 'admin' ? '/admin/salons' : '/bookings'
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-slate-800">
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <Scissors className="w-5 h-5 text-emerald-400" />
-          <span className="text-xl font-bold text-white tracking-tight">Trimly</span>
+          <div className="w-8 h-8 bg-amber-400 rounded-xl flex items-center justify-center">
+            <Scissors className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-xl font-bold text-gray-900 tracking-tight">Trimly</span>
         </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
           <Link
             href="/salons"
-            className={`text-sm ${pathname.startsWith('/salons') ? 'text-emerald-400' : 'text-slate-400 hover:text-white'} transition-colors`}
+            className={`text-sm font-medium transition-colors ${
+              pathname.startsWith('/salons')
+                ? 'text-amber-500'
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            Browse Salons
+          </Link>
+
+          {profile ? (
+            <>
+              <Link
+                href={dashboardHref}
+                className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1.5"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {profile.full_name?.[0]?.toUpperCase() ?? '?'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-gray-400 hover:text-gray-700 flex items-center gap-1 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => router.push('/auth/login')}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => router.push('/auth/login')}
+                className="bg-amber-400 hover:bg-amber-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors shadow-sm"
+              >
+                Book Now
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen
+            ? <X className="w-5 h-5 text-gray-600" />
+            : <Menu className="w-5 h-5 text-gray-600" />
+          }
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 shadow-lg">
+          <Link
+            href="/salons"
+            className="text-gray-700 text-sm font-medium py-1"
+            onClick={() => setMobileOpen(false)}
           >
             Browse Salons
           </Link>
@@ -65,70 +132,34 @@ export default function Navbar() {
             <>
               <Link
                 href={dashboardHref}
-                className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1"
+                className="text-gray-700 text-sm font-medium flex items-center gap-2 py-1"
+                onClick={() => setMobileOpen(false)}
               >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
+                <LayoutDashboard className="w-4 h-4" /> Dashboard
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={handleLogout}
-                className="text-slate-400 hover:text-white flex items-center gap-1"
+                className="text-gray-400 text-sm font-medium text-left flex items-center gap-2 py-1"
               >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/auth/login')}
-                className="text-slate-300"
-              >
-                Login
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => router.push('/auth/login')}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
-              >
-                Book Now
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden text-slate-400 hover:text-white"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-950 px-4 py-4 flex flex-col gap-3">
-          <Link href="/salons" className="text-slate-300 text-sm" onClick={() => setMobileOpen(false)}>
-            Browse Salons
-          </Link>
-          {profile ? (
-            <>
-              <Link href={dashboardHref} className="text-slate-300 text-sm flex items-center gap-1" onClick={() => setMobileOpen(false)}>
-                <User className="w-4 h-4" /> Dashboard
-              </Link>
-              <button onClick={handleLogout} className="text-slate-300 text-sm text-left flex items-center gap-1">
                 <LogOut className="w-4 h-4" /> Logout
               </button>
             </>
           ) : (
             <>
-              <Link href="/auth/login" className="text-slate-300 text-sm" onClick={() => setMobileOpen(false)}>Login</Link>
-              <Link href="/auth/login" className="text-emerald-400 text-sm font-medium" onClick={() => setMobileOpen(false)}>Book Now</Link>
+              <Link
+                href="/auth/login"
+                className="text-gray-700 text-sm font-medium py-1"
+                onClick={() => setMobileOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/auth/login"
+                className="bg-amber-400 text-white text-sm font-bold text-center py-2.5 rounded-xl"
+                onClick={() => setMobileOpen(false)}
+              >
+                Book Now
+              </Link>
             </>
           )}
         </div>

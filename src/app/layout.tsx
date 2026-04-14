@@ -14,6 +14,20 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/* Polyfill localStorage.getItem for sandboxed preview environments where
+            the Storage mock may be missing individual methods */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            if (typeof window !== 'undefined' && window.localStorage &&
+                typeof window.localStorage.getItem !== 'function') {
+              window.localStorage.getItem = function() { return null; };
+              window.localStorage.setItem = window.localStorage.setItem || function() {};
+              window.localStorage.removeItem = window.localStorage.removeItem || function() {};
+            }
+          } catch(e) {}
+        `}} />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
         <Toaster />
