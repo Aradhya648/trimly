@@ -31,10 +31,10 @@ export default function HomePage() {
     // Dynamic import so Supabase only loads client-side (prevents SSR module eval of localStorage)
     import('@/lib/supabase/client').then(({ createClient }) => {
       const supabase = createClient()
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.auth.getUser().then(({ data: { user } }: { data: { user: { id: string } | null } }) => {
         if (!user) return
         supabase.from('profiles').select('*').eq('id', user.id).single()
-          .then(({ data }) => setProfile(data))
+          .then(({ data }: { data: Profile | null }) => setProfile(data))
       })
     })
 

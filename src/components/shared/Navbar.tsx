@@ -1,21 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { Scissors, Menu, X, LogOut, LayoutDashboard } from 'lucide-react'
 import type { Profile } from '@/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const clientRef = useRef<SupabaseClient | null>(null)
 
   useEffect(() => {
-    // Dynamic import keeps Supabase out of the SSR bundle
     import('@/lib/supabase/client').then(({ createClient }) => {
       const supabase = createClient()
+      clientRef.current = supabase
 
       const fetchUser = async () => {
         const { data: { user } } = await supabase.auth.getUser()
@@ -31,7 +33,7 @@ export default function Navbar() {
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await clientRef.current?.auth.signOut()
     setProfile(null)
     router.push('/')
   }
@@ -43,7 +45,6 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-amber-400 rounded-xl flex items-center justify-center">
             <Scissors className="w-4 h-4 text-white" />
@@ -51,14 +52,11 @@ export default function Navbar() {
           <span className="text-xl font-bold text-gray-900 tracking-tight">Trimly</span>
         </Link>
 
-        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
           <Link
             href="/salons"
             className={`text-sm font-medium transition-colors ${
-              pathname.startsWith('/salons')
-                ? 'text-amber-500'
-                : 'text-gray-500 hover:text-gray-900'
+              pathname.startsWith('/salons') ? 'text-amber-500' : 'text-gray-500 hover:text-gray-900'
             }`}
           >
             Browse Salons
@@ -106,26 +104,17 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile toggle */}
         <button
           className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
-          {mobileOpen
-            ? <X className="w-5 h-5 text-gray-600" />
-            : <Menu className="w-5 h-5 text-gray-600" />
-          }
+          {mobileOpen ? <X className="w-5 h-5 text-gray-600" /> : <Menu className="w-5 h-5 text-gray-600" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 flex flex-col gap-3 shadow-lg">
-          <Link
-            href="/salons"
-            className="text-gray-700 text-sm font-medium py-1"
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link href="/salons" className="text-gray-700 text-sm font-medium py-1" onClick={() => setMobileOpen(false)}>
             Browse Salons
           </Link>
           {profile ? (
@@ -137,27 +126,16 @@ export default function Navbar() {
               >
                 <LayoutDashboard className="w-4 h-4" /> Dashboard
               </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-400 text-sm font-medium text-left flex items-center gap-2 py-1"
-              >
+              <button onClick={handleLogout} className="text-gray-400 text-sm font-medium text-left flex items-center gap-2 py-1">
                 <LogOut className="w-4 h-4" /> Logout
               </button>
             </>
           ) : (
             <>
-              <Link
-                href="/auth/login"
-                className="text-gray-700 text-sm font-medium py-1"
-                onClick={() => setMobileOpen(false)}
-              >
+              <Link href="/auth/login" className="text-gray-700 text-sm font-medium py-1" onClick={() => setMobileOpen(false)}>
                 Login
               </Link>
-              <Link
-                href="/auth/login"
-                className="bg-amber-400 text-white text-sm font-bold text-center py-2.5 rounded-xl"
-                onClick={() => setMobileOpen(false)}
-              >
+              <Link href="/auth/login" className="bg-amber-400 text-white text-sm font-bold text-center py-2.5 rounded-xl" onClick={() => setMobileOpen(false)}>
                 Book Now
               </Link>
             </>

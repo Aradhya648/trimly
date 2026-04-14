@@ -1,4 +1,5 @@
-import { createBrowserClient, type SupabaseClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Singleton — one client per browser session
 let _client: SupabaseClient | null = null
@@ -20,7 +21,7 @@ function makeStub(): SupabaseClient {
   } as unknown as SupabaseClient
 }
 
-/** A storage adapter that silently swallows any localStorage errors (broken sandbox, SSR mocks, etc.) */
+/** A storage adapter that silently swallows any localStorage errors */
 const safeStorage = {
   getItem(key: string): string | null {
     try { return window.localStorage.getItem(key) } catch { return null }
