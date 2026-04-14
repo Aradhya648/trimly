@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       ).catch(console.error) // Non-blocking
     }
 
-    return NextResponse.json({ data: booking }, { status: 201 })
+    return NextResponse.json({ data: bookingWithDetails ?? booking }, { status: 201 })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create booking' },

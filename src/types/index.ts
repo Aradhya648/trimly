@@ -5,7 +5,7 @@ export type NotificationType = 'confirmation' | 'cancellation' | 'reminder'
 
 export interface Profile {
   id: string
-  phone: string
+  phone: string | null
   full_name: string
   role: UserRole
   created_at: string
@@ -100,6 +100,7 @@ export interface BookingWithDetails extends Booking {
   staff: Staff
   service: Service
   slot: AvailabilitySlot
+  customer?: Profile
 }
 
 export interface SalonWithDetails extends Salon {
