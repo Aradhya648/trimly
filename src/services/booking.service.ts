@@ -50,7 +50,8 @@ export async function getCustomerBookings(
       salon:salons(*),
       staff:staff(*),
       service:services(*),
-      slot:availability_slots(*)
+      slot:availability_slots(*),
+      review:reviews(*)
     `)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })

@@ -30,8 +30,10 @@ export default function LiveTrafficBadge({ staffId, initialStatus, initialQueue 
 
   useEffect(() => {
     let channel: RealtimeChannel | null = null
+    let cancelled = false
 
     import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return
       const supabase = createClient()
       channel = supabase
         .channel(`barber_status:${staffId}`)
@@ -55,11 +57,8 @@ export default function LiveTrafficBadge({ staffId, initialStatus, initialQueue 
     })
 
     return () => {
-      if (channel) {
-        import('@/lib/supabase/client').then(({ createClient }) => {
-          createClient().removeChannel(channel!)
-        })
-      }
+      cancelled = true
+      channel?.unsubscribe()
     }
   }, [staffId])
 
