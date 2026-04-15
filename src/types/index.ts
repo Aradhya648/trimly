@@ -2,12 +2,14 @@ export type UserRole = 'customer' | 'owner' | 'admin'
 export type BookingStatus = 'confirmed' | 'cancelled' | 'completed'
 export type PaymentStatus = 'unpaid' | 'paid' | 'refunded'
 export type NotificationType = 'confirmation' | 'cancellation' | 'reminder'
+export type BarberStatusType = 'available' | 'busy' | 'break' | 'offline'
 
 export interface Profile {
   id: string
   phone: string | null
   full_name: string
   role: UserRole
+  avatar_url: string | null
   created_at: string
 }
 
@@ -24,9 +26,19 @@ export interface Salon {
   phone: string
   email: string
   cover_image_url: string
+  gallery_urls: string[]
+  open_time: string
+  close_time: string
   is_active: boolean
   created_at: string
   min_price?: number
+}
+
+export interface BarberStatus {
+  staff_id: string
+  status: BarberStatusType
+  queue_len: number
+  updated_at: string
 }
 
 export interface Staff {
@@ -35,8 +47,12 @@ export interface Staff {
   name: string
   bio: string
   avatar_url: string
+  specialty: string | null
+  is_best_seller: boolean
+  experience_years: number
   is_active: boolean
   created_at: string
+  barber_status?: BarberStatus
 }
 
 export interface Service {
@@ -48,6 +64,48 @@ export interface Service {
   price: number
   is_active: boolean
   created_at: string
+}
+
+export interface Offer {
+  id: string
+  salon_id: string
+  title: string
+  description: string | null
+  discount_pct: number | null
+  code: string | null
+  valid_from: string
+  valid_until: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface Review {
+  id: string
+  booking_id: string
+  customer_id: string
+  staff_id: string
+  salon_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  customer?: Profile
+}
+
+export interface FavouriteBarber {
+  id: string
+  customer_id: string
+  staff_id: string
+  created_at: string
+  staff?: Staff
+}
+
+export interface BusinessHours {
+  id: string
+  salon_id: string
+  day_of_week: number
+  open_time: string
+  close_time: string
+  is_closed: boolean
 }
 
 export interface StaffService {
@@ -101,6 +159,7 @@ export interface BookingWithDetails extends Booking {
   service: Service
   slot: AvailabilitySlot
   customer?: Profile
+  review?: Review
 }
 
 export interface SalonWithDetails extends Salon {

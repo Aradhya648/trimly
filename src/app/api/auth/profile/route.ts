@@ -20,10 +20,14 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { full_name, role } = parsed.data
+
+    // Upsert to handle Google OAuth users who may not have a profile row yet
     const { error } = await supabase
       .from('profiles')
-      .update({ full_name, role })
-      .eq('id', user.id)
+      .upsert(
+        { id: user.id, full_name, role },
+        { onConflict: 'id' }
+      )
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ success: true })

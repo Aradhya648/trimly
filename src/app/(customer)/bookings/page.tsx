@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation'
 import Navbar from '@/components/shared/Navbar'
 import Footer from '@/components/shared/Footer'
 import BookingCard from '@/components/booking/BookingCard'
+import ReviewModal from '@/components/booking/ReviewModal'
 import type { BookingWithDetails } from '@/types'
 
 export default function MyBookingsPage() {
   const router = useRouter()
   const [bookings, setBookings] = useState<BookingWithDetails[]>([])
   const [loading, setLoading] = useState(true)
+  const [reviewBookingId, setReviewBookingId] = useState<string | null>(null)
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch('/api/bookings/my')
@@ -27,6 +30,16 @@ export default function MyBookingsPage() {
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const handleReviewSubmit = () => {
+    if (reviewBookingId) {
+      setReviewedIds((prev) => new Set([...prev, reviewBookingId]))
+    }
+    setReviewBookingId(null)
+  }
+
+  const completedWithoutReview = (booking: BookingWithDetails) =>
+    booking.status === 'completed' && !booking.review && !reviewedIds.has(booking.id)
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -55,12 +68,37 @@ export default function MyBookingsPage() {
         ) : (
           <div className="flex flex-col gap-4">
             {bookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} />
+              <div key={booking.id}>
+                <BookingCard booking={booking} />
+                {completedWithoutReview(booking) && (
+                  <div className="mt-1 px-1">
+                    <button
+                      onClick={() => setReviewBookingId(booking.id)}
+                      className="text-xs font-semibold text-amber-400 border border-amber-400/50 hover:bg-amber-400/10 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      ⭐ Rate your visit
+                    </button>
+                  </div>
+                )}
+                {reviewedIds.has(booking.id) && (
+                  <div className="mt-1 px-1">
+                    <span className="text-xs text-emerald-400 font-medium">Review submitted!</span>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
       </main>
       <Footer />
+
+      {reviewBookingId && (
+        <ReviewModal
+          bookingId={reviewBookingId}
+          onClose={() => setReviewBookingId(null)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
     </div>
   )
 }

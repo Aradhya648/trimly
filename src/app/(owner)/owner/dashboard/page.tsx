@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Store, CalendarCheck, Clock, TrendingUp, ArrowRight, CheckCircle2, Circle, Plus } from 'lucide-react'
+import { Store, CalendarCheck, Clock, TrendingUp, ArrowRight, Circle, Plus, Radio, Tag } from 'lucide-react'
 import Navbar from '@/components/shared/Navbar'
 import StatCard from '@/components/owner/StatCard'
 import BookingsTable from '@/components/owner/BookingsTable'
@@ -103,6 +103,41 @@ export default function OwnerDashboardPage() {
             <StatCard title="Today's Bookings" value={todayBookings.length} description="confirmed" icon={<CalendarCheck className="w-5 h-5" />} />
             <StatCard title="Upcoming" value={upcomingBookings.length} description="all upcoming confirmed" icon={<Clock className="w-5 h-5" />} />
             <StatCard title="Total Bookings" value={bookings.length} description="all time" icon={<TrendingUp className="w-5 h-5" />} />
+          </div>
+        )}
+
+        {/* Quick Actions — shown only when salons exist */}
+        {!isNewOwner && !loading && salons.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-base font-semibold text-slate-300 mb-3">Quick Actions</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {salons.map((salon) => (
+                <div key={salon.id} className="contents">
+                  <Link href={`/owner/salons/${salon.id}/live-traffic`}>
+                    <div className="bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-2xl p-4 flex flex-col gap-2 cursor-pointer transition-all group">
+                      <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center group-hover:bg-amber-400/20 transition-colors">
+                        <Radio className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white text-sm">Live Traffic</p>
+                        <p className="text-slate-500 text-xs truncate">{salon.name}</p>
+                      </div>
+                    </div>
+                  </Link>
+                  <Link href={`/owner/salons/${salon.id}/offers`}>
+                    <div className="bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-2xl p-4 flex flex-col gap-2 cursor-pointer transition-all group">
+                      <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center group-hover:bg-amber-400/20 transition-colors">
+                        <Tag className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white text-sm">Offers</p>
+                        <p className="text-slate-500 text-xs truncate">{salon.name}</p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

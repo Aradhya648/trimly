@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Bell, Zap, Tag, MapPin, ChevronRight, User } from 'lucide-react'
 import SalonCard from '@/components/salon/SalonCard'
+import OffersMarquee from '@/components/shared/OffersMarquee'
 import type { Salon, Profile } from '@/types'
 
 const SERVICE_CATEGORIES = [
@@ -93,6 +94,9 @@ export default function HomePage() {
           />
         </form>
       </div>
+
+      {/* Offers Marquee */}
+      <OffersMarquee />
 
       <div className="px-4 py-4 space-y-6">
         {/* Offers Banner + Instant Booking */}
