@@ -155,4 +155,11 @@ CREATE POLICY "fav_own" ON favourite_barbers FOR ALL USING (auth.uid() = custome
 -- ══════════════════════════════════════════════════════════
 -- REALTIME (enable for barber_status so live traffic works)
 -- ══════════════════════════════════════════════════════════
-ALTER PUBLICATION supabase_realtime ADD TABLE barber_status;
+DO $$BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'barber_status'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE barber_status;
+  END IF;
+END$$;
