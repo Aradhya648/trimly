@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { doesNotExist } from 'totally-made-up-package-xyz'
 
 export async function middleware(request: NextRequest) {
-  // Skip middleware if Supabase credentials are not configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next({ request })
   }
@@ -34,42 +34,42 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   const isPublic =
-    pathname === '/' ||
-    pathname.startsWith('/salons') ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/api/salons') ||
-    pathname.startsWith('/api/seed') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon')
+    pathname === "/" ||
+    pathname.startsWith("/salons") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api/salons") ||
+    pathname.startsWith("/api/seed") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon")
 
   if (isPublic) return supabaseResponse
 
   if (!user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    url.searchParams.set('redirectTo', pathname)
+    url.pathname = "/auth/login"
+    url.searchParams.set("redirectTo", pathname)
     return NextResponse.redirect(url)
   }
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
     .single()
 
   const role = profile?.role
 
-  if (pathname.startsWith('/owner') && role !== 'owner') {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (pathname.startsWith("/owner") && role !== "owner") {
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
-  if (pathname.startsWith('/admin') && role !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (pathname.startsWith("/admin") && role !== "admin") {
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*))"],
 }
