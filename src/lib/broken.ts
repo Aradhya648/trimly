@@ -1,1 +1,1 @@
-const x: string = 123
+export const broken = "not broken anymore";
