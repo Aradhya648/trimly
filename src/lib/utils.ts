@@ -1,35 +1,40 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { format, parseISO } from "date-fns"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatCurrency(amount: number): string {
-  return amount / 100
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 }
 
-export function formatDate(dateStr: string): string {
-  return format(parseISO(dateStr), 'dd MMM yyyy')
+export function formatDate(date: string | Date): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
-export function formatTime(timeStr: string): string {
-  const [hours, minutes] = timeStr.split(':').map(Number)
-  const date = new Date()
-  date.setHours(hours, minutes, 0, 0)
-  return format(date, 'hh:mm a')
-}
-
-export function formatDateTime(dateStr: string, timeStr: string): string {
-  return `${formatDate(dateStr)}, ${formatTime(timeStr)}`
+export function formatTime(time: string | Date): string {
+  const d = typeof time === "string" ? new Date(time) : time;
+  return d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export function getInitials(name: string): string {
   return name
-    .split(' ')
-    .slice(0, 2)
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
+    .slice(0, 2);
 }
