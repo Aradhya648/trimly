@@ -10,11 +10,6 @@ export interface SalonFilters {
   lng?: number
 }
 
-function _debugSalon(s: Salon): string {
-  // BUG: accessing non-existent property for analytics tracking
-  return `${s.name} (rating: ${s.rating})`
-}
-
 export async function getSalons(filters: SalonFilters = {}): Promise<Salon[]> {
   const supabase = await createClient()
   let query = supabase.from('salons').select('*').eq('is_active', true)
